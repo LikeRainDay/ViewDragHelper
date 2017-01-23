@@ -130,14 +130,23 @@ public class DragLayoutThree extends ViewGroup{
             mDragOffset = (float) top / mDragRange;
 
 //            Log.i(TAG, "onViewPositionChanged:" + "mDragOffset:" + mDragOffset);
-
             mHeaderView.setPivotX(mHeaderView.getWidth());
             mHeaderView.setPivotY(mHeaderView.getHeight());
             mHeaderView.setScaleX(1 - mDragOffset / 2);
             mHeaderView.setScaleY(1 - mDragOffset / 2);
 
             mDescView.setAlpha(1 - mDragOffset);
-
+            /**
+             * Call this when something has changed which has invalidated the
+             * layout of this view. This will schedule a layout pass of the view
+             * tree. This should not be called while the view hierarchy is currently in a layout
+             * pass ({@link #isInLayout()}. If layout is happening, the request may be honored at the
+             * end of the current layout pass (and then layout will run again) or after the current
+             * frame is drawn and the next layout occurs.
+             *
+             * <p>Subclasses which override this method should call the superclass method to
+             * handle possible request-during-layout errors correctly.</p>
+             */
             requestLayout();
         }
 
@@ -153,13 +162,21 @@ public class DragLayoutThree extends ViewGroup{
         @Override
         public void onViewReleased(View releasedChild, float xvel, float yvel) {
 //            Log.i(TAG, "onViewReleased:" + "xvel:" + xvel + ",yvel:" + yvel);
-            //yvel Fling产生的值，yvel > 0 则是快速往下Fling || yvel < 0 则是快速往上Fling
+                     //yvel Fling产生的值，yvel > 0 则是快速往下Fling || yvel < 0 则是快速往上Fling
 
             int top = getPaddingTop();
             if (yvel > 0 || (yvel == 0 && mDragOffset > 0.4f)/* 后面这个小括号里判断处理拖动之后停下来但是未松手的情况 */) {
                 top += mDragRange;
             }
             mDragHelper.settleCapturedViewAt(releasedChild.getLeft(), top);
+            /**
+             * Invalidate the whole view. If the view is visible,
+             * {@link #onDraw(android.graphics.Canvas)} will be called at some point in
+             * the future.
+             * <p>
+             * This must be called from a UI thread. To call from a non-UI thread, call
+             * {@link #postInvalidate()}.
+             */
             invalidate();//important 不加，就不会刷新View的位置 尼玛。。。。你试试注释掉看看。弄死我了，睡觉。
         }
 
